@@ -15,3 +15,9 @@ Notes, both TPM and FPKM are still used in pracice, but neither are made to comp
 ## Notes
 Some modifications for fit and train will have to be made (in order to avoid any data leakage).
 
+
+
+# References
+
+Love MI, Huber W, Anders S. Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biol. 2014;15(12):550. doi: 10.1186/s13059-014-0550-8. PMID: 25516281; PMCID: PMC4302049.
+
