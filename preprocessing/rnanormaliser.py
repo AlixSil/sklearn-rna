@@ -26,21 +26,26 @@ class DESeqNormalizer(BaseEstimator, TransformerMixin):
         else:
             X_copy = X.copy()
 
-        #check for negative values
-        if (X_copy < 0).any() :
+        # check for negative values
+        if (X_copy < 0).any():
             raise ValueError("DESeqNormalizer cannot be fitted on negative values")
+
+        # We store the number of gene to check during transform if the appropriate number of genes are passed
+        self.number_of_genes = X_copy.shape[1]
 
         self.non_zero_genes_indexes = np.where(X.all(axis=0))[0]
 
-        #Check we have at least one gene with non zero values
-        if len(self.non_zero_genes_indexes) == 0 :
-            raise ValueError("DESeqNormalizer need at least one gene with no zero vvalues to be fitted")
+        # Check we have at least one gene with non zero values
+        if len(self.non_zero_genes_indexes) == 0:
+            raise ValueError(
+                "DESeqNormalizer need at least one gene with no zero vvalues to be fitted"
+            )
 
         self.non_zero_genes_gmean_values = np.apply_along_axis(
             gmean, 0, X_copy[:, self.non_zero_genes_indexes]
         )
 
-        return (self.non_zero_genes_indexes, self.non_zero_genes_gmean_values)
+        return self
 
     def transform(self, X, **fit_params):
         """The transform method will compute the size factors of each sample, if the sample was has a gene with expression zero who was selected in the fit, the gene will be ignored only for this sample"""
@@ -50,7 +55,11 @@ class DESeqNormalizer(BaseEstimator, TransformerMixin):
         else:
             X_copy = X.copy()
         print(X_copy)
-        
+
+        if X_copy.shape[1] != self.number_of_genes:
+            raise ValueError(
+                "Trying to transform a different number of gene that this transformer has been fitted on"
+            )
 
         size_factor = []
         for i in range(X_copy.shape[0]):
@@ -68,4 +77,4 @@ class DESeqNormalizer(BaseEstimator, TransformerMixin):
             X_copy[i] = X_copy[i] / size_factor
 
         print("final X_copy {}".format(X_copy))
-        return(X_copy)
+        return X_copy
