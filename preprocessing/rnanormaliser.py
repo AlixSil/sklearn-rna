@@ -47,7 +47,7 @@ class DESeqNormalizer(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X, **fit_params):
+    def transform(self, X, **transform_params):
         """The transform method will compute the size factors of each sample, if the sample was has a gene with expression zero who was selected in the fit, the gene will be ignored only for this sample"""
 
         if type(X) == pd.DataFrame:
@@ -77,4 +77,90 @@ class DESeqNormalizer(BaseEstimator, TransformerMixin):
             X_copy[i] = X_copy[i] / size_factor
 
         print("final X_copy {}".format(X_copy))
+        return X_copy
+
+
+class TMM(BaseEstimator, TransformerMixin):
+    """
+    Trimmed Mean of M values normalisation method,
+    The reference sample is picked out only during the fitting.
+    This normalisation makes the assumption that most genes are not differentially expressed between classes.
+    This normalisation is planned for raw reads.
+    See the original article for more informations
+    """
+
+    def fit(self, X, library_sizes=None, reference_line=None, **fit_params):
+        """TMM method uses a reference sample that will be picked among the fitted X, you can explicitly pick it out by submitting the index in reference_column.
+        otherwise, the reference picked will be the sample whose upper quartile is closest to the mean upper quartile is used"""
+
+        if type(X) == pd.DataFrame:
+            X_copy = X.copy().to_numpy()
+        else:
+            X_copy = X.copy()
+
+        if library_sizes is None:
+            library_sizes = X.sum(axis=1)
+
+        if reference_line is None:
+            third_quartiles = np.quantile(X_copy / library_sizes[:, None], 0.75, axis=1)
+            average_third_quartiles = third_quartiles.mean()
+            reference_line = (
+                np.abs(third_quartiles - average_third_quartiles)
+            ).argmin()
+            self.scaled_reference_sample = (
+                X[reference_line] / library_sizes[reference_line]
+            )
+
+        else:
+            if reference_line not in list(range(X_copy.shape[0])):
+                raise ValueError("reference_line variable is out of bounds")
+            else:
+                self.scaled_reference_sample = (
+                    X[reference_line] / library_sizes[reference_line]
+                )
+
+    def transform(self, X, library_sizes=None, **transform_params):
+        if type(X) == pd.DataFrame:
+            X_copy = X.copy().to_numpy()
+        else:
+            X_copy = X.copy()
+
+        if library_sizes is None:
+            library_sizes = X.sum(axis=1)
+
+        for s in range(X_copy.shape[0]):
+            # loop on sample
+            scaled_current_sample = current_sample / library_sizes[s]
+
+            M = np.log2(self.scaled_reference_sample) - np.log2(scaled_current_sample)
+            A = (
+                np.log(self.scaled_reference_sample)
+                + np.log(self.scaled_reference_sample)
+            ) / 2
+
+            m_lower, m_higher = np.percentile(M, [30, 70])
+            a_lower, a_higher = np.percentile(A, [5, 95])
+
+            references_genes_index = np.where(
+                (M >= m_lower) & (M <= m_higher) & (A >= a_lower) & (A <= a_higher)
+            )
+
+            M_trimmed = M[references_genes_index]
+            scaled_current_sample_trimmed = scaled_current_sample[
+                references_genes_index
+            ]
+            scaled_reference_sample_trimmed = self.scaled_reference_sample[
+                references_genes_index
+            ]
+
+            weights = (
+                (1 - scaled_current_sample_trimmed) / scaled_current_sample_trimmed
+            ) + (
+                (1 - scaled_reference_sample_trimmed) / scaled_reference_sample_trimmed
+            )
+
+            tmm = 2 ** np.mean(M, weights=weights)
+
+            X_copy[s] = X_copy[s] / tmm
+
         return X_copy
