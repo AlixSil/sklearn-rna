@@ -10,6 +10,7 @@ The aim of this project is to expand on sklearn classes to allow for better hand
 ## Planned features
 - Normalisation
 	- Propose a multithreading of TTM transform
+	- Rank based (the expression of gene g in sample s is the rank of the gene g in sample s)
 
 - Benchmarking
 	- benchmarking of each normalisation method for the purpose of patient classification.
@@ -24,3 +25,4 @@ Love MI, Huber W, Anders S. Moderated estimation of fold change and dispersion f
 
 Robinson MD, Oshlack A. A scaling normalization method for differential expression analysis of RNA-seq data. Genome Biol. 2010;11(3):R25. doi: 10.1186/gb-2010-11-3-r25. Epub 2010 Mar 2. PMID: 20196867; PMCID: PMC2864565.
 
+Prasad Patil, Pierre-Olivier Bachant-Winner, Benjamin Haibe-Kains, Jeffrey T. Leek, Test set bias affects reproducibility of gene signatures, Bioinformatics, Volume 31, Issue 14, July 2015, Pages 2318–2323, https://doi.org/10.1093/bioinformatics/btv157
