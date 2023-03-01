@@ -8,7 +8,7 @@ query.clinical <- GDCquery(
     data.format = "BCR Biotab"
 )
 GDCdownload(query.clinical)
-clinicaldat <- GDCprepare(query)
+clinicaldat <- GDCprepare(query.clinical)
 
 a = clinicaldat@colData[, c("patient", "days_to_last_follow_up", "days_to_death", "vital_status")]
 

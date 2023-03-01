@@ -1,23 +1,34 @@
 # sklearn-rna
 
-The aim of this project is to expand on sklearn classes to allow for better handling of RNA-seq data.
+Most RNA normalization method are aiming to correct for differences in library size (i.e. one sample has in total more read than others) and differences in library composition (i.e. gene G is highly transcribd in 20% of the samples, but not transcribed in the others). To that end, multiple samples are treated together.
 
-## Current features
-- Normalisation
-	- Deseq(2) normalisation
-	- TTM normalisation
+However, this creates both replicability problems (Patil et. al.) as new data cannot be normalised into the same conditions, and data leakage problem as train and test are often normalised together, and hence part of test information is used to format the train dataset.
 
-## Planned features
-- Normalisation
-	- Propose a multithreading of TTM transform
-	- Rank based (the expression of gene g in sample s is the rank of the gene g in sample s)
+In this repository, I aim to extend sklearn with some classical RNA normalization method, modified for a data science use. More specifically I enforce the following demands.
+- the fit method will learn what is needed for the normalization from the training dataset.
+- the transform method will have the same results for samples that are processed separately or together.
 
-- Benchmarking
-	- benchmarking of each normalisation method for the purpose of patient classification.
+I also aim to benchmark them in the case of survival study prediction, against themselves and against classical TPM and FPKM. I'm expecting the classical TPM and FPKM to be superior because of data leakage.
 
-## Notes
-Some modifications have been made to the some normalization (namely DESeq(2)) in order to make them compatible with a fit/transform paradigm where not every samples are available at the same time. Please read the code or the future documentation in detail if needed.
 
+## Normalization methods
+### Deseq(2) normalization
+Normalization inspired by the scale factoring present in DESeq2 (Love MI et. al.)
+
+This normalization had to have been severely changed from its origin to fit with the demands of this study.
+In practice almost all the information on the size factor comes from the fit test.
+
+### TMM normalization
+Trimmed Mean of M values normalization method (Robinson MD et. al.).
+This method applies itself very easily to our framework, as it normalises each sample against a reference sample. We hence select a reference sample from our fitted test and go from there.
+
+### Rank based normalization
+The value of gene g in sample s becomes the rank of gene g in sample s.
+Each sample is treated independantly, the only fit is to guarantee that all samples have the same number of genes.
+
+
+## Benchmarking
+WIP
 
 
 # References
