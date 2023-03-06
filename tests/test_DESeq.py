@@ -1,4 +1,4 @@
-from preprocessing.rnanormaliser import DESeqNormalizer
+from preprocessing.rnanormaliser import DESeqNormalizer #This runs on pytest, need to be made cleaner
 import pandas as pd
 import numpy as np
 import pytest

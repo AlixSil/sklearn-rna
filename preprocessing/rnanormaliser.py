@@ -54,7 +54,6 @@ class DESeqNormalizer(BaseEstimator, TransformerMixin):
             X_copy = X.copy().to_numpy()
         else:
             X_copy = X.copy()
-        print(X_copy)
 
         if X_copy.shape[1] != self.number_of_genes:
             raise ValueError(
@@ -63,20 +62,15 @@ class DESeqNormalizer(BaseEstimator, TransformerMixin):
 
         size_factor = []
         for i in range(X_copy.shape[0]):
-            print("---------")
-            print(i)
+
             sample_genes = X_copy[i, self.non_zero_genes_indexes]
-            print("sample genes : {}".format(sample_genes))
             temp = sample_genes / self.non_zero_genes_gmean_values
-            print("temp : {}".format(temp))
             temp = [n for n in temp if n != 0]
             size_factor = median(temp)
-            print("size factor : {}".format(size_factor))
 
             X_copy = X_copy.astype(np.float32)
             X_copy[i] = X_copy[i] / size_factor
 
-        print("final X_copy {}".format(X_copy))
         return X_copy
 
 
@@ -158,7 +152,6 @@ class TMM(BaseEstimator, TransformerMixin):
                 (M >= m_lower) & (M <= m_higher) & (A >= a_lower) & (A <= a_higher)
             )[0]
 
-            print(references_genes_index)
 
             M_trimmed = M[references_genes_index]
 
@@ -182,7 +175,7 @@ class TMM(BaseEstimator, TransformerMixin):
             X_copy = X_copy.astype("float32")
             X_copy[s] = X_copy[s] / tmm
 
-        return X_copy
+        return(X_copy)
 
 
 class RankedExpression(BaseEstimator, TransformerMixin):

@@ -28,7 +28,12 @@ Each sample is treated independantly, the only fit is to guarantee that all samp
 
 
 ## Benchmarking
-WIP
+Prototype in progress !
+TODO :
+- Use a pipeline to oversee the download and running of evaluation on different TCGA datasets
+- This pipeline layer should also incorporate the various normalisation we have
+- The choice of parameters stage is still barebone and must be extended (maybe with usage of some smarter technique than gridsearchCV)
+- Creation of comparison graphs, statistics and comments
 
 
 # References
