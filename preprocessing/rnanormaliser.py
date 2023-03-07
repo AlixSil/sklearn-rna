@@ -18,7 +18,7 @@ class DESeqNormalizer(BaseEstimator, TransformerMixin):
     Love MI, Huber W, Anders S. Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biol. 2014;15(12):550. doi: 10.1186/s13059-014-0550-8. PMID: 25516281; PMCID: PMC4302049.
     """
 
-    def fit(self, X, **fit_params):
+    def fit(self, X=None,y=None, **fit_params):
         """Fit method will, in our case decide which are the genes that are used in the computation of size factor (by removing genes that have a zero expression in at least one sample),
         note that if a sample wasn't fitted on, he will not be taken into account in the computation of the geometric mean values."""
         if type(X) == pd.DataFrame:
@@ -83,7 +83,7 @@ class TMM(BaseEstimator, TransformerMixin):
     See the original article for more informations
     """
 
-    def fit(self, X, library_sizes=None, reference_line=None, **fit_params):
+    def fit(self, X=None,y=None, library_sizes=None, reference_line=None, **fit_params):
         """TMM method uses a reference sample that will be picked among the fitted X, you can explicitly pick it out by submitting the index in reference_column.
         otherwise, the reference picked will be the sample whose upper quartile is closest to the mean upper quartile is used"""
 
@@ -181,16 +181,16 @@ class TMM(BaseEstimator, TransformerMixin):
 class RankedExpression(BaseEstimator, TransformerMixin):
     """TODO"""
 
-    def fit(self, X, **fit_params): 
+    def fit(self, X=None,y=None, **fit_params): 
         self.number_of_genes = X.shape[1]
         return(self)
 
     def transform(self, X, **transform_params):
 
-        if X.shape[1] == self.number_of_genes:
+        if X.shape[1] != self.number_of_genes:
             raise ValueError(
                 "X has a different number of genes than the set this normalizer was fitted on"
             )
 
-        X_copy = X.argsort(axis=1)/argsort(axis=1)
+        X_copy = X.argsort(axis=1).argsort(axis=1)
         return(X_copy)

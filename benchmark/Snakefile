@@ -1,0 +1,48 @@
+import pandas as pd
+
+
+
+TCGA_projects = ["TCGA-ACC"]
+normalisation_types = ["TMM", "DESeqNormalizer", "RankedExpression"]
+
+rule all:
+	input : 
+		outfile=expand(os.path.join("Temp", "{TCGA_projects}", "{normalisation_types}.csv"),
+			TCGA_projects = TCGA_projects,
+			normalisation_types = normalisation_types)
+		
+rule download:
+	output: 
+		dir=directory(os.path.join("Formatted_data", "{TCGA_projects}")),
+		clinical = os.path.join(
+			"Formatted_data",
+			"{TCGA_projects}",
+			"clinical.csv"
+			),
+		raw_counts = os.path.join(
+			"Formatted_data",
+			"{TCGA_projects}",
+			"raw_counts.csv"
+			),
+	shell:
+		"Rscript rules/download_data.R {wildcards.TCGA_projects}"
+
+rule score:
+	output:
+		outfile=os.path.join("Temp", "{TCGA_projects}", "{normalisation_types}.csv"),
+
+	input:
+		clinical = os.path.join(
+				"Formatted_data",
+				"{TCGA_projects}",
+				"clinical.csv"
+			), 
+
+		raw_counts = os.path.join(
+				"Formatted_data",
+				"{TCGA_projects}",
+				"raw_counts.csv"
+			),
+
+	shell:
+		"python rules/run_xgb.py {wildcards.TCGA_projects} {wildcards.normalisation_types} 25 {output.outfile} "

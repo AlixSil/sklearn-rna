@@ -1,13 +1,17 @@
 library(TCGAbiolinks)
 library(dplyr)
 
-clinicaldat <- GDCquery_clinic("TCGA-ACC", type="clinical", save.csv=FALSE)
+args = commandArgs(trailingOnly = TRUE)
+project =  args[1]
+
+
+clinicaldat <- GDCquery_clinic(project, type="clinical", save.csv=FALSE)
 
 clinicaldat.formatted = clinicaldat[, c("bcr_patient_barcode", "days_to_last_follow_up", "days_to_death", "vital_status")]
 
 
 query.exp <- GDCquery(
-    project = "TCGA-ACC", 
+    project = project, 
     data.category = "Transcriptome Profiling",
     data.type = "Gene Expression Quantification",
     workflow.type = "STAR - Counts"
@@ -45,7 +49,9 @@ names(renaming_vector) <- samples_handling$patient
 
 expdat.filter <- expdat.filter %>% rename(., all_of(renaming_vector)) %>% filter(row_number() < n()-3)
 
-dir.create("Formatted_data/TCGA-ACC", showWarnings=FALSE)
 
-write.csv(expdat.filter, file = "Formatted_data/TCGA-ACC/raw_counts.csv", row.names = FALSE)
-write.csv(clinicaldat.formatted, file = "Formatted_data/TCGA-ACC/clinical.csv", row.names = FALSE)
+output_dir = paste("Formatted_data/", project, sep="")
+dir.create(output_dir, showWarnings=FALSE)
+
+write.csv(expdat.filter, file = paste(output_dir, "raw_counts.csv", sep="/"), row.names = FALSE)
+write.csv(clinicaldat.formatted, file = paste(output_dir, "clinical.csv", sep="/"), row.names = FALSE)
