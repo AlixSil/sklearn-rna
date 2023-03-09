@@ -2,7 +2,7 @@ import sys
 
 project = sys.argv[1]
 normalizerType = sys.argv[2]
-number_iteration = int(sys.argv[3])
+random_state = int(sys.argv[3])
 outfile = sys.argv[4]
 
 
@@ -13,9 +13,10 @@ sys.path.insert(1, '/home/alix/Programmation/sklearn-rna/')
 
 import pandas as pd
 import xgboost as xgb
+import optuna
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import cross_val_score
 from sksurv.metrics import concordance_index_censored
 
 if normalizerType == "TMM" :
@@ -54,46 +55,62 @@ y = clinical_data.y.to_numpy()
 
 # separate train and test sets
 final_results = []
-for random_state in range(number_iteration):
-	X_train, X_test, y_train, y_test = train_test_split(
+
+
+X_train, X_test, y_train, y_test = train_test_split(
 			X,
 			y,
-			test_size = 0.3,
+			test_size = 0.5,
 			random_state = random_state
 		)
 
-	# Run crossvalidation on the train test to choose the best set of parameters (TODO : run something smarter)
-
-	## Define the general model with a pipeline
+def objective(trial):
 	pip = Pipeline( [
 		("normalizer", nrm()), 
-		("XGBoost", xgb.XGBRegressor(objective = "survival:cox", eval_metric = "cox-nloglik"))
+		("XGBoost", xgb.XGBRegressor(objective = "survival:cox",
+			 eval_metric = "cox-nloglik",
+			 learning_rate = trial.suggest_float("learning_rate", 0.01, 0.5),
+			 max_depth = trial.suggest_int("max_depth", 1,8),
+			 colsample_bytree = trial.suggest_float("colsample_bytree", 0.05, 1)
+			 ))
+		])
+	scores = cross_val_score(pip, X_test, y_test)
+	result = scores.mean()
+	return(result)
+
+study = optuna.create_study(direction="minimize")
+study.optimize(objective, n_trials=25)
+
+print(study.best_params)
+
+pip = Pipeline( [
+		("normalizer", nrm()), 
+		("XGBoost", xgb.XGBRegressor(objective = "survival:cox",
+			 eval_metric = "cox-nloglik",
+			 **study.best_params
+			 ))
 		])
 
-	## Define the space of exploration (Prototypal)
+pip.fit(X_train, y_train)
 
-	params = {
-		"XGBoost__learning_rate" : [0.01],
-		"XGBoost__max_depth" : [2],
-	}
-
-	gscv = GridSearchCV(pip, params, verbose=2, n_jobs=1)
-	gscv.fit(X_train,y_train)
-
-	y_pred_risk = gscv.predict(X_test)
-	y_test_events = y_test >= 0
-	y_test_time = abs(y_test)
+y_pred_risk = pip.predict(X_test)
+y_test_events = y_test >= 0
+y_test_time = abs(y_test)
 
 
-	CI = concordance_index_censored(y_test_events, y_test_time, y_pred_risk)[0]
-	final_results.append({
-		"CI" : CI,
-		"random_state" : random_state,
-		"normalizerType" : normalizerType,
-		"project" : project
-		})
+
+CI = concordance_index_censored(y_test_events, y_test_time, y_pred_risk)[0]
+final_results.append({
+	"CI" : CI,
+	"random_state" : random_state,
+	"normalizerType" : normalizerType,
+	"project" : project,
+	"learning_rate" : study.best_params["learning_rate"],
+	"max_depth" : study.best_params["max_depth"],
+	"colsample_bytree" : study.best_params["colsample_bytree"],
+	"trial_score" : study.best_trial.value
+	})
 
 final_results = pd.DataFrame.from_records(final_results)
 
 final_results.to_csv(outfile)
-

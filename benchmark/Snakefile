@@ -2,14 +2,15 @@ import pandas as pd
 
 
 
-TCGA_projects = ["TCGA-ACC"]
+TCGA_projects = ["TCGA-ACC", "TCGA-TGCT"]
 normalisation_types = ["TMM", "DESeqNormalizer", "RankedExpression"]
 
 rule all:
 	input : 
-		outfile=expand(os.path.join("Temp", "{TCGA_projects}", "{normalisation_types}.csv"),
+		outfile=expand(os.path.join("Temp", "{TCGA_projects}", "{normalisation_types}", "{iteration}.csv"),
 			TCGA_projects = TCGA_projects,
-			normalisation_types = normalisation_types)
+			normalisation_types = normalisation_types,
+			iteration = list(range(10)))
 		
 rule download:
 	output: 
@@ -29,7 +30,7 @@ rule download:
 
 rule score:
 	output:
-		outfile=os.path.join("Temp", "{TCGA_projects}", "{normalisation_types}.csv"),
+		outfile=os.path.join("Temp", "{TCGA_projects}", "{normalisation_types}", "{iteration}.csv")
 
 	input:
 		clinical = os.path.join(
@@ -45,4 +46,4 @@ rule score:
 			),
 
 	shell:
-		"python rules/run_xgb.py {wildcards.TCGA_projects} {wildcards.normalisation_types} 25 {output.outfile} "
+		"python rules/run_xgb.py {wildcards.TCGA_projects} {wildcards.normalisation_types} {wildcards.iteration} {output.outfile}"
