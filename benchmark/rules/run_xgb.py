@@ -64,6 +64,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 			random_state = random_state
 		)
 
+
 def objective(trial):
 	pip = Pipeline( [
 		("normalizer", nrm()), 
@@ -98,8 +99,11 @@ y_test_events = y_test >= 0
 y_test_time = abs(y_test)
 
 
+try :
+	CI = concordance_index_censored(y_test_events, y_test_time, y_pred_risk)[0]
+except ValueError :
+	CI = None
 
-CI = concordance_index_censored(y_test_events, y_test_time, y_pred_risk)[0]
 final_results.append({
 	"CI" : CI,
 	"random_state" : random_state,
