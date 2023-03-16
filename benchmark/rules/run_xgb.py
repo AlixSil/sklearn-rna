@@ -32,7 +32,6 @@ else :
 # Load data
 RNA_data = pd.read_csv("Formatted_data/{}/raw_counts.csv".format(project))
 clinical_data = pd.read_csv("Formatted_data/{}/clinical.csv".format(project))
-
 # Format data in numpy X and y
 
 ## Filter for mismatch (shouldn't happen)
@@ -44,7 +43,7 @@ RNA_data = RNA_data.loc[:,patients]
 clinical_data = clinical_data.set_index("bcr_patient_barcode")
 clinical_data = clinical_data.loc[patients, :]
 
-##numpying and transposing RNA data
+# ##numpying and transposing RNA data
 X = RNA_data.to_numpy().T
 
 ##Creating the correct y vector (time od death positive, censored time negative)
@@ -92,8 +91,7 @@ pip = Pipeline( [
 			 ))
 		])
 
-pip.fit(X_train, y_train)
-
+pip.fit(X_train,y_train)
 y_pred_risk = pip.predict(X_test)
 y_test_events = y_test >= 0
 y_test_time = abs(y_test)

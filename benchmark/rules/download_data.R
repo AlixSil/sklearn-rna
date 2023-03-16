@@ -2,6 +2,7 @@ library(TCGAbiolinks)
 library(dplyr)
 
 args = commandArgs(trailingOnly = TRUE)
+
 project = args[1]
 
 
@@ -11,6 +12,8 @@ clinicaldat.formatted = clinicaldat[, c("bcr_patient_barcode", "days_to_last_fol
 
 #some patients do not have survival data
 clinicaldat.formatted  <- clinicaldat.formatted  %>% filter( !is.na(vital_status) )
+clinicaldat.formatted  <- clinicaldat.formatted  %>% filter( ! (is.na(days_to_last_follow_up)&is.na(days_to_death) ))
+clinicaldat.formatted  <- clinicaldat.formatted  %>% filter( vital_status %in% c("Alive", "Dead") )
 
 
 query.exp <- GDCquery(

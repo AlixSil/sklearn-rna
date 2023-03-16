@@ -2,7 +2,7 @@ import pandas as pd
 
 
 
-TCGA_projects = ["TCGA-ACC", "TCGA-TGCT"]
+TCGA_projects = ["TCGA-ACC", "TCGA-TGCT", "TCGA-SKCM"]
 normalisation_types = ["TMM", "DESeqNormalizer", "RankedExpression"]
 
 rule all:
