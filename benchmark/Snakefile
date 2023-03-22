@@ -2,7 +2,7 @@ import pandas as pd
 
 
 
-TCGA_projects = ["TCGA-ACC", "TCGA-TGCT", "TCGA-SKCM"]
+TCGA_projects = ["TCGA-ACC", "TCGA-TGCT", "TCGA-MESO"]
 normalisation_types = ["TMM", "DESeqNormalizer", "RankedExpression"]
 
 rule all:
@@ -10,7 +10,7 @@ rule all:
 		outfile=expand(os.path.join("Temp", "{TCGA_projects}", "{normalisation_types}", "{iteration}.csv"),
 			TCGA_projects = TCGA_projects,
 			normalisation_types = normalisation_types,
-			iteration = list(range(10)))
+			iteration = list(range(20)))
 		
 rule download:
 	output: 
