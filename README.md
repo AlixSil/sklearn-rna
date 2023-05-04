@@ -10,6 +10,7 @@ In this repository, I aim to extend sklearn with some classical RNA normalizatio
 
 I also aim to benchmark them in the case of survival study prediction, against themselves and against classical TPM and FPKM. I'm expecting the classical TPM and FPKM to be superior because of data leakage.
 
+## This project is in temporary hiatus
 
 ## Normalization methods
 ### Deseq(2) normalization
