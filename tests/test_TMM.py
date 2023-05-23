@@ -1,4 +1,4 @@
-from preprocessing.rnanormaliser import TMM
+from sklearnRNA.rnanormaliser import TMM
 import pandas as pd
 import numpy as np
 import pytest
